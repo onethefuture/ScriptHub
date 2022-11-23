@@ -1,0 +1,51 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+etcd:
+  external:
+    endpoints:
+      - http://10.181.20.72:2379
+networking:
+  serviceSubnet: "10.10.0.0/16"
+  podSubnet: "192.168.0.0/16"
+  dnsDomain: "cluster.local"
+kubernetesVersion: "v1.25.4"
+controlPlaneEndpoint: "10.181.20.72:6443"
+apiServer:
+  extraArgs:
+    authorization-mode: "Node,RBAC"
+    audit-log-maxage: "30" 
+    audit-log-maxbackup: "3" 
+    audit-log-maxsize: "100"
+    audit-log-path: "/data/logs/kubernetes"
+    log-dir: "/data/logs/kubernetes"
+    alsologtostderr: "true"
+  certSANs:
+  - "10.181.20.72"
+  timeoutForControlPlane: 4m0s
+controllerManager:
+  extraArgs:
+    log-dir: "/data/logs/kubernetes"
+    alsologtostderr: "true"
+    service-cluster-ip-range: "10.10.0.0/16"
+    cluster-cidr: "192.168.0.0/16"
+scheduler:
+  extraArgs:
+    log-dir: "/data/logs/kubernetes"
+    alsologtostderr: "true"
+imageRepository: "registry.aliyuncs.com/google_containers"
+clusterName: "gstrain-cluster"
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+args:
+  kube-reserved: "cpu=4000m,memory=16384Mi"
+  eviction-hard: "nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,memory.available<100Mi"
+  pod-infra-container-image: "registry.aliyuncs.com/google_containers/pause:3.8"
+  log-dir: "/data/logs/kubernetes"
+  alsologtostderr: "true"
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+clusterCIDR: "192.168.0.0/16"
