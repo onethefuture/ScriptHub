@@ -89,7 +89,6 @@ crictl image
 if [[ $? -eq 0 ]];then
   echo "=========================================================kubeadm已安装完成===================================================="
   echo "####Go to run 'kubeadm init --config kubeadm-config.yaml --upload-certs'"
-  kubeadm init --config ./kubeadm-config.yaml --upload-certs
 fi
 
 
