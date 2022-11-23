@@ -1,0 +1,34 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: prometheus-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - airmonitor.shmao.net 
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: prometheus-server
+spec:
+  gateways:
+    - prometheus-gateway
+  hosts:
+    - airmonitor.shmao.net
+  http:
+    - match:
+        - uri:
+            prefix: /prometheus
+      route:
+        - destination:
+            host: prom-prometheus-server
+            port:
+              number: 80
