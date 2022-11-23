@@ -37,3 +37,79 @@ etcdctl --endpoints=http://192.168.100.10:2379 put test "123"
 etcdctl --endpoints=http://192.168.100.10:2379 get test
 ```
 
+## helm_Hub
+
+### monitor
+
+:zap::修改value文件
+
+#### grafana
+
+##### 服务配置
+
+```yaml
+grafana.ini:
+  paths:
+    data: /var/lib/grafana/
+    logs: /var/log/grafana
+    plugins: /var/lib/grafana/plugins
+    provisioning: /etc/grafana/provisioning
+  analytics:
+    check_for_updates: true
+  log:
+    mode: console
+  grafana_net:
+    url: https://grafana.net
+  server:
+    root_url: http://grafana.monitor.svc/grafana   ###添加prefixURL
+    serve_from_sub_path: true
+```
+
+> serve_from_sub_path 允许添加prefix_url
+>
+> root_url 添加后缀 ‘/grafana’
+
+调节**persistence** size
+
+```yaml
+persistence:
+  type: pvc
+  enabled: true   ####确认开启持久化
+  accessModes:
+    - ReadWriteOnce
+  size: 300Gi
+......
+initChownData:
+  ## If false, data ownership will not be reset at startup
+  ## This allows the grafana-server to be run with an arbitrary user
+  ##
+  enabled: false   ####
+```
+
+#### prometheus
+
+##### 添加prefixURL
+
+```shell
+server: 
+ prefixURL: "/prometheus"
+```
+
+##### 服务配置
+
+```yaml
+  prometheus.yml:
+    rule_files:
+      - /etc/config/recording_rules.yml
+      - /etc/config/alerting_rules.yml
+    ## Below two files are DEPRECATED will be removed from this default values file
+      - /etc/config/rules
+      - /etc/config/alerts
+
+      - job_name: kube-state-metrics
+        static_configs:
+          - targets:
+            - prometheus-kube-state-metrics.monitor.svc:8080
+```
+
+
