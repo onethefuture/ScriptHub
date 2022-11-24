@@ -30,7 +30,7 @@ sleep 1
 echo "install etcd cluster !!!"
 IP_LIST="10.181.20.72"
 CLUSTER_NAME="etcd_cluster"
-mv etcd-v3.4/* / && cd / && bash -x setup.sh $CLUSTER_NAME $IP_LIST
+tar -zxvf etcd-v3.4.7.tgz -C / && cd / && bash -x setup.sh $CLUSTER_NAME $IP_LIST
 systemctl start etcd && systemctl enable etcd 
 if [ $? -eq 0 ];then
   echo "===========================================================etcd服务正常启动==========================================="
