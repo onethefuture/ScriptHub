@@ -37,6 +37,21 @@ etcdctl --endpoints=http://192.168.100.10:2379 put test "123"
 etcdctl --endpoints=http://192.168.100.10:2379 get test
 ```
 
+### ETCD新增节点
+
+##例子
+##修改etcd_install.sh内容
+IP_LIST="10.100.2.64 10.100.2.65 10.100.2.66 10.100.2.58"
+
+```shell
+$ bash etcd_install.sh
+$ sed -i "s/new/existing/g" /usr/local/etc/etcd/env
+##运行etcd服务
+$ etcdctl --endpoints=http://10.100.2.65:2379 member add  etcd_cluster-4 --peer-urls=http://10.100.2.58:2380
+```
+
+
+
 ## helm_Hub
 
 ### monitor
