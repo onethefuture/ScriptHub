@@ -41,16 +41,52 @@ etcdctl --endpoints=http://192.168.100.10:2379 get test
 
 ##例子
 ##修改etcd_install.sh内容
-IP_LIST="10.100.2.64 10.100.2.65 10.100.2.66 10.100.2.58"
+IP_LIST="192.168.100.10 192.168.100.20 192.168.100.30 192.168.100.40"
 
 ```shell
 $ bash etcd_install.sh
 $ sed -i "s/new/existing/g" /usr/local/etc/etcd/env
 ##运行etcd服务
-$ etcdctl --endpoints=http://10.100.2.65:2379 member add  etcd_cluster-4 --peer-urls=http://10.100.2.58:2380
+$ etcdctl --endpoints=http://192.168.100.10:2379 member add  etcd_cluster-4 --peer-urls=http://192.168.100.40:2380
 ```
 
+### K8S新增节点
 
+#### control节点
+
+```shell
+##kubeadm工具
+#创建token
+$ kubeadm token create --ttl 0 --print-join-command
+#创建新的证书密钥
+$ kubeadm init phase upload-certs --upload-certs  (--config kubeadm-config.yaml)
+```
+
+> --ttl 0 永不过期
+>
+> --print-join-command  不仅仅打印令牌，而是打印使用令牌加入集群所需的完整 'kubeadm join' 参数 
+>
+> --config 指定自定义的配置文件，kubeadm默认join无需指定
+
+`**证书密钥配合token一起使用**`
+
+例子：
+
+```shell
+$  kubeadm join 192.168.100.10:6443 --token 3cdp6t.6tgur7pve8o7dbwp \
+        --discovery-token-ca-cert-hash sha256:207d35b15595cc09c7a81f96b5f759f76cba17e03fcb52a685ff0e2710128cc3 \
+        --control-plane --certificate-key 91a35d074a96f8bb3f37ac5b24fe275e41b578236707323dc154acaab3fe1178
+```
+
+#### work节点
+
+```shell
+##kubeadm工具
+#创建token
+$ kubeadm token create --ttl 0 --print-join-command
+```
+
+**直接使用打印出的token**
 
 ## helm_Hub
 
