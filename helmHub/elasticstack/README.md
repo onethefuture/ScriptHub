@@ -24,7 +24,7 @@ Elasticsearch是个开源分布式搜索引擎，提供搜集、分析、存储�
 
 Kibana可以为 Logstash 和 ElasticSearch 提供的日志分析友好的 Web 界面，可以帮助汇总、分析和搜索重要数据日志。 
 
-![1671698293270](D:\MyConfiguration\jie7.wang\AppData\Roaming\Typora\typora-user-images\1671698293270.png)
+![1671698293270](https://img-blog.csdnimg.cn/0e17b83bfe6d48258898a62468412b01.png#pic_center)
 
 ​	`日志采集器Logstash其功能虽然强大，但是它依赖java、`在数据量大的时候，Logstash进程会消耗过多的系统资源，这将严重影响业务系统的性能，而filebeat就是一个完美的替代者，它基于Go语言没有任何依赖，配置文件简单，格式明了，同时filebeat比logstash更加轻量级，所以占用系统资源极少，非常适合安装在生产机器上。这就是推荐使用filebeat，也是 ELK Stack 在 Agent 的第一选择。
 ​	此架构适合大型集群、海量数据的业务场景，它通过将前端Logstash Agent替换成filebeat，有效降低了收集日志对业务系统资源的消耗。同时，消息队列使用kafka集群架构，有效保障了收集数据的安全性和稳定性，而后端Logstash和Elasticsearch均采用集群模式搭建，从整体上提高了ELK系统的高效性、扩展性和吞吐量。我所在的项目组采用的就是这套架构，由于生产所需的配置较高，且涉及较多持久化操作，采用的都是性能高配的云主机搭建方式而非时下流行的容器搭建 
