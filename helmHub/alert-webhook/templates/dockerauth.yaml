@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alert-docker-auth 
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: >-
+    eyJhdXRocyI6eyJodHRwczovL2h1Yi4xN3Vzb2Z0LmNvbS8iOnsidXNlcm5hbWUiOiIxMjA2NzE3IiwicGFzc3dvcmQiOiJ6ejUyMTMwKysiLCJhdXRoIjoiTVRJd05qY3hOenA2ZWpVeU1UTXdLeXM9In19fQ==
