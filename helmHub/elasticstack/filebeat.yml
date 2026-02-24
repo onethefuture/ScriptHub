@@ -1,0 +1,110 @@
+filebeat.inputs:
+  - type: container
+    paths:
+      - "/var/log/containers/*gstrain*.log"
+      - "/var/log/containers/*tencent*.log"
+      - "/var/log/containers/*qpnew*.log"
+      - "/var/log/containers/*gsnormal*.log"
+      - "/var/log/containers/*gsdevice*.log"
+    exclude_files: ['_istio-proxy-', '_istio-init-']
+    scan_frequency: 1s
+    fields:
+      log_type: business
+      DEPLOYMENT_ENV: "PROD"
+    fields_under_root: true
+
+  - type: container
+    paths:
+      - "/var/log/containers/*gsnormal_istio-proxy*.log"
+      - "/var/log/containers/*gstrain_istio-proxy*.log"
+    scan_frequency: 1s
+    fields:
+      log_type: envoy
+      kafka_topic: "gsEnvoyAccessLog"
+    fields_under_root: true
+
+processors:
+  - add_kubernetes_metadata:
+      in_cluster: true
+      matchers:
+        - logs_path:
+            logs_path: "/var/log/containers/"
+
+  - drop_event:
+      when:
+        and:
+          - equals.log_type: "business"
+          - not:
+              regexp:
+                message: ".*version.*"
+
+  - add_fields:
+      when: { contains.log.file.path: "gstrain" }
+      target: ""
+      fields: { kafka_topic: "gstrainpod2" }
+
+  - add_fields:
+      when: { contains.log.file.path: "tencent" }
+      target: ""
+      fields: { kafka_topic: "gstrainpod2" }
+
+  - add_fields:
+      when: { contains.log.file.path: "qpnew" }
+      target: ""
+      fields: { kafka_topic: "gsqpnewpod2" }
+
+  - add_fields:
+      when: { contains.log.file.path: "gsnormal" }
+      target: ""
+      fields: { kafka_topic: "gsnormalpod2" }
+
+  - add_fields:
+      when: { contains.log.file.path: "gsdevice" }
+      target: ""
+      fields: { kafka_topic: "gsdevice" }
+
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+      when:
+        and:
+          - or:
+              - contains.log.file.path: "qpnew"
+              - contains.log.file.path: "gsnormal"
+          - regexp:
+              message: '.*(backstage|bury4backstage).*'
+  
+  - add_fields:
+      when:
+        or:
+          - equals.secondFacility: "backstage"
+          - equals.secondFacility: "bury4backstage"  
+      target: ""
+      fields:
+        kafka_topic: "backlog"
+
+  - drop_fields:
+      fields: 
+        - "agent"
+        - "ecs"
+        - "host"
+        - "input"
+        - "log"
+        - "stream"
+        - "log_type"
+        - "tmp"
+        - "kubernetes.labels"
+        - "kubernetes.node"
+        - "kubernetes.pod.uid"
+        - "kubernetes.namespace_uid"
+      ignore_missing: true
+
+output.kafka:
+  hosts: ["192.168.100.10:9092","192.168.100.20:9092","192.168.100.30:9092"]  
+  topic: '%{[kafka_topic]}'
+  partition.round_robin:
+    reachable_only: true
+  required_acks: 1
+  compression: gzip
+  max_message_bytes: 1000000
